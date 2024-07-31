@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const content = document.querySelector(".content");
 
   let cooldown = false;
+  let micOn = true; // Variable to keep track of microphone state
   const openedTabs = {};  // Object to store references to opened tabs
 
   function speak(text) {
@@ -79,16 +80,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   recognition.onend = () => {
       content.textContent = "Click to Speak";
-      recognition.start();  // Restart recognition to keep it always on
+      if (micOn) {
+          recognition.start();  // Restart recognition if the mic is still on
+      }
   };
 
   btn.addEventListener("click", () => {
-      recognition.start();
+      if (micOn) {
+          recognition.start();
+      } else {
+          speak("Microphone is off. Please turn it on to use voice commands.");
+      }
   });
 
   function handleCommand(message) {
       console.log(`Received command: ${message}`);
       switch (true) {
+          case /turn off mike|turn off microphone/.test(message):
+              if (micOn) {
+                  recognition.stop();
+                  micOn = false;
+                  speak("Microphone is turned off.");
+              } else {
+                  speak("Microphone is already off.");
+              }
+              break;
+          case /turn on mike|turn on microphone/.test(message):
+              if (!micOn) {
+                  recognition.start();
+                  micOn = true;
+                  speak("Microphone is turned on.");
+              } else {
+                  speak("Microphone is already on.");
+              }
+              break;
           case /hey|hello/.test(message):
               speak("Hello Sir, How May I Help You?");
               break;
